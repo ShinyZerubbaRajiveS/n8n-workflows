@@ -1,0 +1,393 @@
+{
+  "name": "YOUTUBE VIDEO NOTES AGENT",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "3b090c9e-b2e1-4ef1-970d-9fec859c893e",
+      "name": "Telegram Trigger",
+      "webhookId": "5577463b-b352-4e93-997e-c49d638475ce",
+      "credentials": {
+        "telegramApi": {
+          "id": "KrGZSV3geV0Kpnup",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "861d249f-d729-49cf-9624-2abb0d9da091",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "youtube.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "d76ebc1f-fe37-405c-a4ee-111424b5769f",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "youtu.be",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "eaba3c69-cd14-4fbc-a06e-37d9ee8d29d0",
+      "name": "Check | Is YouTube URL?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Got it! Processing your video... \nThis might take 30–60 seconds ⏳",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        -144
+      ],
+      "id": "41b55f46-620e-4947-94d3-86c778c1773c",
+      "name": "Telegram | Acknowledge Video Received",
+      "webhookId": "43ebfcee-890e-412b-99f4-f5b12562aeb8",
+      "credentials": {
+        "telegramApi": {
+          "id": "KrGZSV3geV0Kpnup",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text =$('Check | Is YouTube URL?').first().json.message.text ;\n\n// Match both youtube.com and youtu.be formats\nlet videoId = null;\n\n// youtube.com/watch?v=VIDEOID\nconst longMatch = text.match(/v=([^&]+)/);\n\n// youtu.be/VIDEOID\nconst shortMatch = text.match(/youtu\\.be\\/([^?&]+)/);\n\nif (longMatch) {\n  videoId = longMatch[1];\n} else if (shortMatch) {\n  videoId = shortMatch[1];\n}\n\nreturn [\n  {\n    videoId,\n    originalUrl: text\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -144
+      ],
+      "id": "40e0dcd7-f7f1-4efa-a0eb-6905361a6145",
+      "name": "Prepare | YouTube URL & Metadata"
+    },
+    {
+      "parameters": {
+        "url": "=https://r.jina.ai/https://www.youtube.com/watch?v={{ $json.videoId }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        544,
+        -144
+      ],
+      "id": "9290dc93-3df6-4b82-bd12-9f6b4fc75a3b",
+      "name": "Fetch | YouTube Transcript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.data || \"\";\n\n// Remove markdown links but keep text\nlet text = raw.replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, \"$1\");\n\n// Remove obvious UI / YouTube noise\ntext = text\n  .replace(/Show transcript/gi, \"\")\n  .replace(/Show more|Show less/gi, \"\")\n  .replace(/Skip navigation/gi, \"\")\n  .replace(/Sign in/gi, \"\")\n  .replace(/Like|Dislike|Reply/gi, \"\")\n  .replace(/Comments\\s+\\d+/gi, \"\")\n  .replace(/Pinned by.*/gi, \"\")\n  .replace(/Sort by.*/gi, \"\")\n  .replace(/In this video[\\s\\S]*/gi, \"\") // remove chapters & below\n  .replace(/\\n{3,}/g, \"\\n\\n\");\n\n// Trim to a safe size for LLMs\ntext = text.trim().slice(0, 12000);\n\nreturn [\n  {\n    cleaned_input_for_ai: text\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -144
+      ],
+      "id": "6025ea8b-fa53-4888-9306-5e16eb04b56e",
+      "name": "Clean | Transcript for AI"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.cleaned_input_for_ai }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "summary",
+              "description": "A short 2–3 sentence executive summary of the YouTube video",
+              "required": true
+            },
+            {
+              "name": "key_points",
+              "description": "Main concepts explained in the video as simple bullet points",
+              "required": true
+            },
+            {
+              "name": "definitions",
+              "description": "Important technical terms explained as term and meaning pairs",
+              "required": true
+            },
+            {
+              "name": "action_items",
+              "description": "Practical or actionable takeaways from the video",
+              "required": true
+            },
+            {
+              "name": "review_questions",
+              "description": "3 to 5 questions to help a learner review the topic",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        -144
+      ],
+      "id": "d56f4f86-d60b-422e-991e-994218fb017c",
+      "name": "AI | Extract Video Insights"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        128
+      ],
+      "id": "200cd91b-01f4-4e96-b30b-2f5907213505",
+      "name": "LLM | Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mkA0iDa9MNz8Ke7F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.output;\n\nlet message = `📘 *Video Summary*\\n\\n`;\n\nmessage += `📝 *Summary*\\n${data.summary}\\n\\n`;\n\nmessage += `📌 *Key Points*\\n${data.key_points}\\n\\n`;\n\nmessage += `📖 *Definitions*\\n${data.definitions}\\n\\n`;\n\nmessage += `✅ *Action Items*\\n${data.action_items}\\n\\n`;\n\nmessage += `❓ *Review Questions*\\n${data.review_questions}\\n`;\n\nreturn [{ telegram_message: message }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        -144
+      ],
+      "id": "73f280ff-65d1-4c53-b1f3-6c87a82f6de2",
+      "name": "Format | Telegram Summary Message"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram | Acknowledge Video Received').item.json.result.chat.id }}",
+        "text": "={{ $json.telegram_message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        -144
+      ],
+      "id": "55861eb8-49bc-437d-8be4-63919fb068b7",
+      "name": "Telegram | Send Final Summary",
+      "webhookId": "65b62d52-72cf-451b-bb7e-2aacaedeba63",
+      "credentials": {
+        "telegramApi": {
+          "id": "KrGZSV3geV0Kpnup",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "❌ Please send a valid YouTube video link.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        176
+      ],
+      "id": "34521f71-ce65-4f3c-be34-cf262eee7e37",
+      "name": "Telegram | Invalid Input Message",
+      "webhookId": "b6a918ac-1cb3-4d76-a9ce-4216329b0fea",
+      "credentials": {
+        "telegramApi": {
+          "id": "KrGZSV3geV0Kpnup",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Project Description\nThis project is a Telegram-based AI video summarizer built using n8n.\nA user sends a YouTube video link to a Telegram bot, and the workflow automatically:\n- fetches the video transcript,\n- analyzes it using an AI model,\n- extracts structured insights like summaries, key points, definitions, and questions,\n- and sends a neatly formatted learning summary back to the user on Telegram.",
+        "height": 192,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        96
+      ],
+      "id": "cff79e84-d8c9-4c6f-aada-cf3a81a3c32b",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check | Is YouTube URL?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check | Is YouTube URL?": {
+      "main": [
+        [
+          {
+            "node": "Telegram | Acknowledge Video Received",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram | Invalid Input Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram | Acknowledge Video Received": {
+      "main": [
+        [
+          {
+            "node": "Prepare | YouTube URL & Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare | YouTube URL & Metadata": {
+      "main": [
+        [
+          {
+            "node": "Fetch | YouTube Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch | YouTube Transcript": {
+      "main": [
+        [
+          {
+            "node": "Clean | Transcript for AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean | Transcript for AI": {
+      "main": [
+        [
+          {
+            "node": "AI | Extract Video Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI | Extract Video Insights": {
+      "main": [
+        [
+          {
+            "node": "Format | Telegram Summary Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM | Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI | Extract Video Insights",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format | Telegram Summary Message": {
+      "main": [
+        [
+          {
+            "node": "Telegram | Send Final Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "76985e42-9562-42ae-9014-b9f5c28ae350",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4e775e6a7b8123fa3f649cc3a23ad16ec8120835d149a7b65c7ef85ed0f2264"
+  },
+  "id": "yi-LfHkNYt-Ev_TnaE6mw",
+  "tags": []
+}
