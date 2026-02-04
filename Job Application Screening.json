@@ -1,0 +1,981 @@
+{
+  "name": "Job Application Screening",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Automated Job Application Screening and Candidate Enrichment \n### Problem Statement:\nOrganizations receive hundreds of job applications daily through online forms. Recruiters must manually verify candidate details, check email validity, and shortlist suitable profiles. This process is slow and repetitive. This automation streamlines candidate screening by capturing applications, enriching candidate data using external APIs, updating a tracking sheet, and notifying HR automatically. \n### Workflow:\n- Candidate submits application form \n- Data is appended to Google Sheets \n- API 1: Email validation  \n- API 2: Gender prediction\n- Merge data from sheet + API1 +API2\n- Extract only the skills\n- IF (skills match?) \n    Yes → Mark as Strong → Update sheet → Email HR\n    No → Mark as Weak → Update sheet → Email candidate",
+        "height": 480,
+        "width": 464
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        -144
+      ],
+      "id": "bcc32971-98d5-4de9-b3d5-a9c731268750",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "formTitle": "Job Application Submission Form",
+        "formDescription": "Please complete the form below to apply for the open position.\nEnsure that all details, including your email address and contact information, are accurate.\nShortlisted candidates will be contacted by our HR team after verification.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "name"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "email"
+            },
+            {
+              "fieldLabel": "Phone",
+              "fieldType": "number",
+              "placeholder": "phone no"
+            },
+            {
+              "fieldLabel": "Job role",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Data Analyst"
+                  },
+                  {
+                    "option": "Software Engineer"
+                  },
+                  {
+                    "option": "DevOps Engineer"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Experience",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Fresher(0-1 year)"
+                  },
+                  {
+                    "option": "1-4 years"
+                  },
+                  {
+                    "option": "4+ years"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Skills",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Python"
+                  },
+                  {
+                    "option": "SQL"
+                  },
+                  {
+                    "option": "JavaScript"
+                  },
+                  {
+                    "option": "React"
+                  },
+                  {
+                    "option": "Cloud"
+                  },
+                  {
+                    "option": "DevOps"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Location",
+              "placeholder": "Current Location"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        192,
+        208
+      ],
+      "id": "20aaead5-e01d-42c7-9254-ca320ed0b4d3",
+      "name": "On form submission",
+      "webhookId": "998d8b4f-2a87-4b97-ae7b-bc6d4996fc83"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM",
+          "mode": "list",
+          "cachedResultName": "Candidate Entries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "Timestamp": "={{ $json.submittedAt }}",
+            "Email": "={{ $json.Email }}",
+            "Phone": "={{ $json.Phone }}",
+            "Job Role": "={{ $json['Job role'] }}",
+            "Experience": "={{ $json.Experience }}",
+            "Skills": "={{ $json.Skills }}",
+            "Location": "={{ $json.Location }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Role",
+              "displayName": "Job Role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills",
+              "displayName": "Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Valid",
+              "displayName": "Email Valid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gender",
+              "displayName": "Gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skill Match",
+              "displayName": "Skill Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        32
+      ],
+      "id": "8b2dc2e3-3f6a-45c3-8d81-5a6a8659865a",
+      "name": "Append or update data in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pgp9naAc9vgbZKl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.genderize.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('Append or update data in sheet').item.json.Name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        432,
+        496
+      ],
+      "id": "a988a61c-412d-455d-8119-a9ccc39e840d",
+      "name": "finds gender"
+    },
+    {
+      "parameters": {
+        "url": "=https://disify.com/api/email/{{ $json.Email }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Email",
+              "value": "={{ $json.Email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        272
+      ],
+      "id": "edfc0b3d-8779-4e54-b08c-8210cb420785",
+      "name": "email validation"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM",
+          "mode": "list",
+          "cachedResultName": "Candidate Entries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Append or update data in sheet').item.json.Name }}",
+            "Timestamp": "={{ $('Append or update data in sheet').item.json.Timestamp }}",
+            "Email": "={{ $('Append or update data in sheet').item.json.Email }}",
+            "Phone": "={{ $('Append or update data in sheet').item.json.Phone }}",
+            "Job Role": "={{ $('Append or update data in sheet').item.json['Job Role'] }}",
+            "Experience": "={{ $('Append or update data in sheet').item.json.Experience }}",
+            "Skills": "={{ $('Append or update data in sheet').item.json.Skills }}",
+            "Location": "={{ $('Append or update data in sheet').item.json.Location }}",
+            "Gender": "={{ $('finds gender').item.json.gender }}",
+            "Email Valid": "={{ $('email validation').item.json.format }}",
+            "Skill Match": "={{ $json['Skill Match'] }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Role",
+              "displayName": "Job Role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills",
+              "displayName": "Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Valid",
+              "displayName": "Email Valid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gender",
+              "displayName": "Gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skill Match",
+              "displayName": "Skill Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1680,
+        32
+      ],
+      "id": "59485f92-1233-4aba-b9eb-e3491fe14269",
+      "name": "Append or update data (Enriched sheet)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pgp9naAc9vgbZKl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shinyzeru@gmail.com",
+        "subject": "POSITIVE",
+        "emailType": "text",
+        "message": "This mail comes from true branch",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1984,
+        32
+      ],
+      "id": "ee059aac-c987-4ff8-972e-a86f91a0ed40",
+      "name": "Send message to HR",
+      "webhookId": "d6592bac-77d0-40bf-b73e-93da41cd7607",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4EKAW8Tjtsrady1u",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shinyzeru@gmail.com",
+        "subject": "NEGATIVE",
+        "emailType": "text",
+        "message": "This mail comes from false branch",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        432
+      ],
+      "id": "2a31fced-e0f1-492c-b3b8-25af01225bb4",
+      "name": "Send message to candidate itself",
+      "webhookId": "ee557a0b-2add-48ed-ba27-04265863f495",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4EKAW8Tjtsrady1u",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "be72efba-ae2c-496b-8257-985ead9557ae",
+              "leftValue": "={{ \n  $json.test_role=== 'Data Analyst' && (\n  $json.test_skill.includes('Python') || \n  $json.test_skill.includes('SQL')) \n}}",
+              "rightValue": "Data Analyst",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "fc4a1df3-3b43-4e0d-bf91-07c55b2d616f",
+              "leftValue": "={{ \n  $json.test_role=== 'Software Engineer' && (\n  $json.test_skill.includes('JavaScript') || \n  $json.test_skill.includes('React')) \n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8bff4e28-109d-41ab-9bfd-48e1c172b3fe",
+              "leftValue": "={{ \n  $json.test_role=== 'DevOps Engineer' && (\n  $json.test_skill.includes('Cloud') || \n  $json.test_skill.includes('DevOps')) \n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1184,
+        224
+      ],
+      "id": "6a946ac5-f7d7-43ba-b5d0-7a75c430203a",
+      "name": "matching skillset"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        784,
+        208
+      ],
+      "id": "44be15d7-54ff-4c4c-8761-e9ffdf9f0a94",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9635c121-c855-40fa-af8f-b64bd2f060d0",
+              "name": "test_role",
+              "value": "={{ $json['Job Role'] }}",
+              "type": "string"
+            },
+            {
+              "id": "17f37ff3-e5af-4d00-95ef-a721e92df1f5",
+              "name": "test_skill",
+              "value": "={{ $json.Skills }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        224
+      ],
+      "id": "d563166b-a1f7-4462-aac3-cfb53d1fb310",
+      "name": "Getting skills"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad815867-66bd-40ff-b0a3-58e1b262e74d",
+              "name": "Skill Match",
+              "value": "Strong",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        32
+      ],
+      "id": "010c9dbc-54c7-4af4-9d23-97b649e3bc86",
+      "name": "Strong skillset"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "691ead4f-b470-45a2-aa7d-ff5a386b4f85",
+              "name": "Skill Match",
+              "value": "Weak",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        432
+      ],
+      "id": "e6ddca8b-29e4-4ff5-8c67-ded5df984c3e",
+      "name": "Weak skillset"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM",
+          "mode": "list",
+          "cachedResultName": "Candidate Entries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DuEo2OcUj2PS2e6scKbUWDI1hFG9MqZuWzE3mewFZqM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Append or update data in sheet').item.json.Name }}",
+            "Timestamp": "={{ $('Append or update data in sheet').item.json.Timestamp }}",
+            "Email": "={{ $('Append or update data in sheet').item.json.Email }}",
+            "Phone": "={{ $('Append or update data in sheet').item.json.Phone }}",
+            "Job Role": "={{ $('Append or update data in sheet').item.json['Job Role'] }}",
+            "Experience": "={{ $('Append or update data in sheet').item.json.Experience }}",
+            "Skills": "={{ $('Append or update data in sheet').item.json.Skills }}",
+            "Location": "={{ $('Append or update data in sheet').item.json.Location }}",
+            "Gender": "={{ $('finds gender').item.json.gender }}",
+            "Email Valid": "={{ $('email validation').item.json.format }}",
+            "Skill Match": "={{ $json['Skill Match'] }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Role",
+              "displayName": "Job Role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Experience",
+              "displayName": "Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skills",
+              "displayName": "Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Valid",
+              "displayName": "Email Valid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gender",
+              "displayName": "Gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skill Match",
+              "displayName": "Skill Match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        432
+      ],
+      "id": "56a1f18b-18eb-485d-9001-ed16265dee73",
+      "name": "Append or update data (Enriched sheet)1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pgp9naAc9vgbZKl1",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Append or update data in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update data in sheet": {
+      "main": [
+        [
+          {
+            "node": "email validation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "finds gender": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "email validation": {
+      "main": [
+        [
+          {
+            "node": "finds gender",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Append or update data (Enriched sheet)": {
+      "main": [
+        [
+          {
+            "node": "Send message to HR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "matching skillset": {
+      "main": [
+        [
+          {
+            "node": "Strong skillset",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Weak skillset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Getting skills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Getting skills": {
+      "main": [
+        [
+          {
+            "node": "matching skillset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strong skillset": {
+      "main": [
+        [
+          {
+            "node": "Append or update data (Enriched sheet)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weak skillset": {
+      "main": [
+        [
+          {
+            "node": "Append or update data (Enriched sheet)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update data (Enriched sheet)1": {
+      "main": [
+        [
+          {
+            "node": "Send message to candidate itself",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c43c8529-fbdd-4c45-a2d7-af09eb1a2762",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4e775e6a7b8123fa3f649cc3a23ad16ec8120835d149a7b65c7ef85ed0f2264"
+  },
+  "id": "xu1LjKZWhBq24g8P9QaZt",
+  "tags": []
+}
