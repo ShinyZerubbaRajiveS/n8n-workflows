@@ -1,0 +1,397 @@
+{
+  "name": "Real Estate Automation",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5a283e62-9583-4a43-bbef-1000ffe91a35",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "145ZgAas5nO9AwG0176IEKFj4W9QtH6jBxI59FF6xJ8Y",
+          "mode": "list",
+          "cachedResultName": "Potential Clients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/145ZgAas5nO9AwG0176IEKFj4W9QtH6jBxI59FF6xJ8Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/145ZgAas5nO9AwG0176IEKFj4W9QtH6jBxI59FF6xJ8Y/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a20db004-8100-480f-8308-cf8f79d5d8f6",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pgp9naAc9vgbZKl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.genderize.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=name",
+              "value": "={{ $json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        432,
+        -112
+      ],
+      "id": "b3fe02c4-c940-43ef-b8c6-d94e32e1d652",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://api.nationalize.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        128
+      ],
+      "id": "ce032116-3d58-4563-827b-7ca08c8a9c89",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "145ZgAas5nO9AwG0176IEKFj4W9QtH6jBxI59FF6xJ8Y",
+          "mode": "list",
+          "cachedResultName": "Potential Clients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/145ZgAas5nO9AwG0176IEKFj4W9QtH6jBxI59FF6xJ8Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/145ZgAas5nO9AwG0176IEKFj4W9QtH6jBxI59FF6xJ8Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get row(s) in sheet').item.json.id }}",
+            "name": "={{ $('Get row(s) in sheet').item.json.name }}",
+            "number": "={{ $('Get row(s) in sheet').item.json.number }}",
+            "budget": "={{ $('Get row(s) in sheet').item.json.budget }}",
+            "gender": "={{ $('HTTP Request').item.json.gender }}",
+            "nationality": "={{ $('HTTP Request1').item.json.country.first().country_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "budget",
+              "displayName": "budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gender",
+              "displayName": "gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nationality",
+              "displayName": "nationality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -32
+      ],
+      "id": "975f0cbd-2353-414a-a4eb-bef543456669",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pgp9naAc9vgbZKl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shinyzeru@gmail.com",
+        "subject": "={{ $json.email.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.email.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -32
+      ],
+      "id": "f16b4668-459b-4469-b200-830e1752cc90",
+      "name": "Send a message",
+      "webhookId": "6fb7ce44-7e1e-4fe2-b732-1eeb3ff8cdc0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4EKAW8Tjtsrady1u",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Automation 2\n## Objectives\n- To fetch existing records from a Google Sheet automatically\n- To enrich each record using external REST APIs:\n- Genderize API to predict gender from a name\n- Nationalize API to predict nationality from a name\n- To update or append the enriched data back into the same spreadsheet\n- To send an automated notification once processing is completed\n## Workflow Description \n- Trigger Node\n-- Starts the workflow when the user clicks Execute Workflow\n- Get Row(s) in Sheet\n-- Reads name data from Google Sheets\n- HTTP Request – Genderize API\n-- Sends name data to https://api.genderize.io\n-- Receives predicted gender and probability\n- HTTP Request – Nationalize API\n-- Sends name data to https://api.nationalize.io\n-- Receives predicted country and probability\n- Append or Update Row in Sheet\n-- Stores enriched information (gender, nationality) back into Google Sheets\n- using AI (openAI message model)\n-- use thisto generate polished main content\n- use set node\n-- to extract subject and body seperately\n- Send a Message (Gmail)\n-- Sends a notification indicating successful completion of the automation",
+        "height": 752,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        -320
+      ],
+      "id": "131cd300-0842-412d-a220-48e460f37b5a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Return the output strictly in JSON format.\nDo not include explanations or extra text.\n\nJSON structure:\n{\n  \"subject\": \"\",\n  \"body\": \"\"\n}\n\nEmail content:\nHey Zeru,\nA new Client {{ $json.name }} has signed up.\n\nDetails:\nName: {{ $json.name }}\nNumber: {{ $json.number }}\nBudget: {{ $json.budget }}\nGender: {{ $json.gender }}\nNationality: {{ $json.nationality }}\n\nThis mail is for real-estate automation and when every new client signs up.. give detailed explanation"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        -32
+      ],
+      "id": "24903fa0-d46f-47d7-9793-e42c3f247b6c",
+      "name": "Message a model",
+      "executeOnce": true,
+      "alwaysOutputData": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "zHSt2AxC8WyMCbxp",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3bfb2c12-af34-456d-887d-0b0c23ec9e3f",
+              "name": "email",
+              "value": "={{ $json.output[0].content[0].text }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        -32
+      ],
+      "id": "b705161b-8bb4-4786-9d6f-5795812d77f3",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "ec32cf29-ccd1-48bd-b5c9-8987d0ba7f13",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4e775e6a7b8123fa3f649cc3a23ad16ec8120835d149a7b65c7ef85ed0f2264"
+  },
+  "id": "rFP_2EdEXlXJZ0YqMDfnc",
+  "tags": []
+}
