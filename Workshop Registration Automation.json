@@ -1,0 +1,237 @@
+{
+  "name": "Workshop Registration Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Automation 1\nFirst automation to understand the working of nodes \n\n🧩 Sample Automation Scenario\nPurpose: Workshop / Event Registration\n\nYou are organizing a free tech workshop (or webinar, seminar, bootcamp, anything academic/professional).\n\nYou want to:\n1. Collect registrations via a form\n2. Store all entries in Google Sheets\n3. Instantly send a confirmation email",
+        "height": 304,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -160
+      ],
+      "id": "6854a95e-755e-42d1-929f-a0dab3d0ee33",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "formTitle": "AI Workshop Registration form",
+        "formDescription": "Hello AI Enthusiasts...! Please fill the details below.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "Your Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "College",
+              "placeholder": "College name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Topic of Interest",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "AI"
+                  },
+                  {
+                    "option": "ML"
+                  },
+                  {
+                    "option": "Automation"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Click to Submit",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your response has been recorded. We'll let you know the updates soon."
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -32,
+        -48
+      ],
+      "id": "5e3df216-264d-49e1-858b-f37e84d9908d",
+      "name": "On form submission",
+      "webhookId": "cce017c5-9548-45ac-8eea-91101419c433"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1drd55ZsQRwDbJAGtDw604lU13ZPpjcOYQcBqQoY65ig",
+          "mode": "list",
+          "cachedResultName": "n8n AI workshop form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1drd55ZsQRwDbJAGtDw604lU13ZPpjcOYQcBqQoY65ig/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1drd55ZsQRwDbJAGtDw604lU13ZPpjcOYQcBqQoY65ig/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "College": "={{ $json.College }}",
+            "Topic of Interest": "={{ $json['Topic of Interest'] }}",
+            "Time": "={{ $json.submittedAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "College",
+              "displayName": "College",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Topic of Interest",
+              "displayName": "Topic of Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        -48
+      ],
+      "id": "fe927e4c-ac64-43b7-b78a-e082c1fef951",
+      "name": "Append row in sheet",
+      "notesInFlow": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pgp9naAc9vgbZKl1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shinyzeru@gmail.com",
+        "subject": "AI Workshop registered candidates",
+        "emailType": "text",
+        "message": "=Hi {{ $json.Name }},\n\nWe’ve saved your details successfully. \nLooking forward to seeing you!\n\n – Team AI Workshop ",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        -48
+      ],
+      "id": "778e3824-7c88-4305-922a-94dae80c551f",
+      "name": "Send a message",
+      "webhookId": "7484f2bd-2e91-4ed3-ab1e-b5569cbea260",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4EKAW8Tjtsrady1u",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## note \n- Add a new field in the n8n Form (for example: Email)\n- Add a new column in Google Sheets (same logical field)\n- Drag & drop that Email field into the “To” field of the Email node\n👉 Then the email will be sent to whoever submitted the form.",
+        "height": 208,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        176,
+        128
+      ],
+      "id": "86b4c956-95e8-417e-aaea-1402a9a653ab",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "6707cf2a-074b-4fea-8483-e7e383584673",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c4e775e6a7b8123fa3f649cc3a23ad16ec8120835d149a7b65c7ef85ed0f2264"
+  },
+  "id": "hK8dd-kt3eXlH4YIbMMvu",
+  "tags": []
+}
